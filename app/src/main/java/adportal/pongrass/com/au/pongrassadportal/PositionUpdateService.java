@@ -25,6 +25,7 @@ import com.google.firebase.FirebaseApp;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ServerValue;
@@ -38,6 +39,8 @@ import java.util.Map;
 
 
 /**
+ * PositionUpdateService is the remote service responsible for background process, even if the app has closed
+ *
  * Created by Ronin on 19/12/2016.
  */
 
@@ -50,8 +53,8 @@ public class PositionUpdateService extends IntentService {
 
     public final static String TAG = "PositionUpdateService";
 
-    public static List<Messenger> mClients = new ArrayList<Messenger>();
-    public static List<Messenger> mClientsToPing = new ArrayList<Messenger>();
+    public static List<Messenger> mClients = new ArrayList<>();
+    public static List<Messenger> mClientsToPing = new ArrayList<>();
 
 
     public static final int MSG_REGISTER_CLIENT = 1;
@@ -67,6 +70,8 @@ public class PositionUpdateService extends IntentService {
 
     public static final int MSG_POSITION_UPDATE_PING = 103;
 
+    private static PositionUpdateService _Singleton = null;
+
 
     @Override
     public void onCreate() {
@@ -75,6 +80,7 @@ public class PositionUpdateService extends IntentService {
         FirebaseApp.initializeApp(this);
         _isRunning = true;
         //StartLoop();
+        _Singleton = this;
     }
 
     @Override
@@ -88,8 +94,6 @@ public class PositionUpdateService extends IntentService {
         return _isRunning;
     }
 
-    ;
-
     private Handler mHandler = new Handler();
     // start it..
     public final int POSITION_UPDATE_FREQUENCY = 10000; // 10 minutes
@@ -102,19 +106,7 @@ public class PositionUpdateService extends IntentService {
         super("PositionUpdateService");
     }
 
-    /**
-     * private Runnable mPositionBroadcast = new Runnable()
-     * {
-     *
-     * @Override public void run() {
-     * Intent localIntent = new Intent(Constants.BROADCAST_ACTION).putExtra(Constants.DATA_STATUS, "abcd");
-     * <p>
-     * LocalBroadcastManager.getInstance(PositionUpdateService.this).sendBroadcast(localIntent);
-     * <p>
-     * mHandler.postDelayed(this, POSITION_UPDATE_FREQUENCY);
-     * };
-     * };
-     **/
+
 
 
     protected Location GetCurrentLocation() {
@@ -139,7 +131,7 @@ public class PositionUpdateService extends IntentService {
     }
 
     public Map<String, Object> GetLocationAsMap(Location loc) {
-        Map<String, Object> result = new HashMap<String, Object>();
+        Map<String, Object> result = new HashMap<>();
 
         if (loc != null) {
             result.put(Constants.LATITUDE, Double.toString(loc.getLatitude()));
@@ -153,7 +145,7 @@ public class PositionUpdateService extends IntentService {
     @Override
     protected void onHandleIntent(Intent intent) {
 
-        if (_loop_started == false) {
+        if (!_loop_started) {
             StartLoop();
         }
     }
@@ -209,11 +201,13 @@ public class PositionUpdateService extends IntentService {
             // update it..
             if (_should_update_firebase) {
                 FirebaseDatabase database = FirebaseDatabase.getInstance();
-
-                String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
-                String ref_loc = "locations/" + uid;
-                DatabaseReference myRef = database.getReference(ref_loc);
-                myRef.push().setValue(GetLocationAsMap(loc));
+                FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+                if (currentUser != null) {
+                    String uid = currentUser.getUid();
+                    String ref_loc = "locations/" + uid;
+                    DatabaseReference myRef = database.getReference(ref_loc);
+                    myRef.push().setValue(GetLocationAsMap(loc));
+                }
             }
             // get the user id
 
@@ -234,7 +228,7 @@ public class PositionUpdateService extends IntentService {
 
     }
 
-    public class PongrassServiceBinder extends Binder {
+    private class PongrassServiceBinder extends Binder {
 
         // the binder is where the service interface is exposed
         public boolean isFirebaseConnect() {
@@ -242,7 +236,7 @@ public class PositionUpdateService extends IntentService {
         }
     }
 
-    ;
+
 
 
     final Messenger mMessenger = new Messenger(new IncomingHandler());
@@ -278,17 +272,17 @@ public class PositionUpdateService extends IntentService {
         }
         catch (RemoteException re) {
             Log.e(TAG, re.getMessage());
-        };
+        }
 
     }
 
-    ;
+
 
 
     /**
      * Handler of incoming messages from clients.
      */
-    class IncomingHandler extends Handler {
+    static private class IncomingHandler extends Handler {
 
         @Override
         public void handleMessage(Message msg) {
@@ -303,14 +297,11 @@ public class PositionUpdateService extends IntentService {
                 case MSG_START_POSITIONUPDATE:
                     if (msg.replyTo != null) {
                         PositionUpdateService.mClientsToPing.add(msg.replyTo);
-                        if (msg.arg1 == 1)
-                        {
-                            _should_update_firebase = true;
-                        }
-                        else {
-                            _should_update_firebase = false;
-                        };
-                        StartLoop();
+
+                        _Singleton._should_update_firebase = (msg.arg1 == 1);
+
+
+                        _Singleton.StartLoop();
                     }
                     else {
                         Log.e(TAG, "Reply to in Start position update is null");
@@ -321,7 +312,7 @@ public class PositionUpdateService extends IntentService {
                     break;
                 case MSG_GET_POSITION_UPDATE:
                     // need to create a bundle..
-                    SendPositionUpdateToClient(msg.replyTo, MSG_GET_POSITION_UPDATE);
+                    _Singleton.SendPositionUpdateToClient(msg.replyTo, MSG_GET_POSITION_UPDATE);
                     break;
                 default:
                     super.handleMessage(msg);
