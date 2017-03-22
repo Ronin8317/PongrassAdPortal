@@ -1,0 +1,53 @@
+<resources>
+    <string name="app_name">PongrassAdPortal</string>
+
+    <!-- Strings related to login -->
+    <string name="prompt_email">Email</string>
+    <string name="prompt_password">Password</string>
+    <string name="action_sign_in">Sign in</string>
+    <string name="action_sign_in_short">Sign in</string>
+    <string name="action_register">Register</string>
+    <string name="action_google_sign_in">Sign in with Google</string>
+    <string name="action_signout">Sign Out</string>
+    <string name="error_invalid_email">This email address is invalid</string>
+    <string name="error_invalid_password">This password is too short</string>
+    <string name="error_incorrect_password">This password is incorrect</string>
+    <string name="error_google_signin">An error has occur while trying to login to Google.</string>
+    <string name="error_facebook_signin">An error has occur while trying to login to Facebook.</string>
+    <string name="error_field_required">This field is required</string>
+    <string name="permission_rationale">"Contacts permissions are needed for providing email
+        completions."
+    </string>
+    <string name="gso_oauth_clientid">488442658294-8bkolfrgmvbar41gk313p7g0i3fdqti7.apps.googleusercontent.com</string>
+    <string name="gso_signin_ok">Google sign in OK</string>
+    <string name="gso_signin_cancelled">Google sign in Cancelled</string>
+    <string name="facebook_app_id">347007338992107</string>
+    <string name="facebook_app_secret">9c159d8568ef860afa3c93cf50e082a0</string>
+    <string name="facebook_signin_ok">Signed in to Facebook</string>
+    <string name="facebook_signin_cancelled">Facebook signin cancelled</string>
+    <string name="take_photo">Take a Photo</string>
+    <string name="open_camera">Open Camera</string>
+
+    <string name="latitude">latitude</string>
+    <string name="longitude">longitude</string>
+
+    <string name="storage_url">gs://pongrassadportal.appspot.com</string>
+    <string name="title_activity_orders_scroll">OrdersScrollActivity</string>
+    <string name="title_activity_accounts_base">AccountsActivityBase</string>
+    <string name="orders">Orders %1d</string>
+    <string name="open_order">Open Order</string>
+    <string name="preference_file_key">pongrass_saved_preferences</string>
+    <string name="random_long_string">WHEREAS the people of New South Wales, Victoria, South
+Australia, Queensland, and Tasmania, humbly relying on the
+blessing of Almighty God, have agreed to unite in one indissoluble
+Federal Commonwealth under the Crown of the United Kingdom
+of Great Britain and Ireland, and under the Constitution hereby
+established:
+And whereas it is expedient to provide for the admission into the
+Commonwealth of other Australasian Colonies and possessions of
+the Queen:
+Be it therefore enacted by the Queen‘s most Excellent Majesty, by
+and with the advice and consent of the Lords Spiritual and
+Temporal, and Commons, in this present Parliament assembled,
+and by the authority of the same, as follows:</string>
+</resources>

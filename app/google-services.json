@@ -1,0 +1,63 @@
+{
+  "project_info": {
+    "project_number": "488442658294",
+    "firebase_url": "https://pongrassadportal.firebaseio.com",
+    "project_id": "pongrassadportal",
+    "storage_bucket": "pongrassadportal.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:488442658294:android:6aeaa927feb770a2",
+        "android_client_info": {
+          "package_name": "adportal.pongrass.com.au.pongrassadportal"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "488442658294-39l3joovkm4pi05jkjtk54evh5o7cir9.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "adportal.pongrass.com.au.pongrassadportal",
+            "certificate_hash": "618E061712AFFD4D929436180296CFEFDEE9A4E7"
+          }
+        },
+        {
+          "client_id": "488442658294-lj7nm3samrgl17sll1t8g3dg592t7dit.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "adportal.pongrass.com.au.pongrassadportal",
+            "certificate_hash": "3D26E351BE7628428A8527BE4C1877A29BD785C6"
+          }
+        },
+        {
+          "client_id": "488442658294-8bkolfrgmvbar41gk313p7g0i3fdqti7.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBv4e_ciDZHrIoFFgv2OkdysvkYfFRCb0c"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "488442658294-8bkolfrgmvbar41gk313p7g0i3fdqti7.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
