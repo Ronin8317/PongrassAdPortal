@@ -1,8 +1,11 @@
 package adportal.pongrass.com.au.pongrassadportal;
 
 import android.app.IntentService;
+import android.app.Service;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationManager;
@@ -31,9 +34,12 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ServerValue;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 
@@ -46,7 +52,7 @@ import java.util.Map;
 
 
 
-public class PositionUpdateService extends IntentService {
+public class PositionUpdateService extends Service {
 
     protected static boolean _isRunning = false;
 
@@ -70,8 +76,35 @@ public class PositionUpdateService extends IntentService {
 
     public static final int MSG_POSITION_UPDATE_PING = 103;
 
+    public static final int GPS_SCAN_PERIOD = 30000; // every 30 seconds..
+    public static final int FIREBASE_UPLOAD_PERIOD = 300000; // every 5 minutes..
+
     private static PositionUpdateService _Singleton = null;
 
+    // counter for firebase upload
+    private int _lastUploadToFirebase = 0;
+
+    private List<Map<String, String>> mLocationsBuffer = new ArrayList<>();
+
+    private BroadcastReceiver mServiceBroadcastReceived = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getStringExtra("action");
+            Log.i(TAG, "Action received is " + action);
+            if (getString(R.string.pongrass_service_start).equals(action))
+            {
+                _should_update_firebase = true;
+                if (!_loop_started) {
+                    StartLoop();
+                }
+            }
+            else if (getString(R.string.pongrass_service_stop).equals(action))
+            {
+                _should_update_firebase = false;
+            }
+
+        }
+    };
 
     @Override
     public void onCreate() {
@@ -81,6 +114,16 @@ public class PositionUpdateService extends IntentService {
         _isRunning = true;
         //StartLoop();
         _Singleton = this;
+
+        IntentFilter filter = new IntentFilter();
+
+
+        String BroadcastActionString = "adportal.pongrass.com.au.pongrassadportal.POSITIONUPDATE";
+        filter.addAction(BroadcastActionString);
+
+        LocalBroadcastManager.getInstance(this).registerReceiver(mServiceBroadcastReceived,
+                filter);
+
     }
 
     @Override
@@ -88,6 +131,7 @@ public class PositionUpdateService extends IntentService {
         super.onDestroy();
         Log.d(TAG, "Position Update is destroyed");
         _isRunning = false;
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(mServiceBroadcastReceived);
     }
 
     public static boolean isRunning() {
@@ -103,7 +147,7 @@ public class PositionUpdateService extends IntentService {
     public boolean _should_update_firebase = false;
 
     public PositionUpdateService() {
-        super("PositionUpdateService");
+
     }
 
 
@@ -130,25 +174,20 @@ public class PositionUpdateService extends IntentService {
         return START_STICKY;
     }
 
-    public Map<String, Object> GetLocationAsMap(Location loc) {
-        Map<String, Object> result = new HashMap<>();
+    public Map<String, String> GetLocationAsMap(Location loc) {
+        Map<String, String> result = new HashMap<>();
 
         if (loc != null) {
+            // current time..
+            Date now = new Date();
             result.put(Constants.LATITUDE, Double.toString(loc.getLatitude()));
             result.put(Constants.LONGITUDE, Double.toString(loc.getLongitude()));
-            result.put(Constants.TIMESTAMP, ServerValue.TIMESTAMP);
-
+            result.put(Constants.TIMESTAMP, Long.toString(now.getTime()));
         }
         return result;
     }
 
-    @Override
-    protected void onHandleIntent(Intent intent) {
 
-        if (!_loop_started) {
-            StartLoop();
-        }
-    }
 
     protected void StartLoop() {
         if (_loop_started) return;
@@ -162,7 +201,7 @@ public class PositionUpdateService extends IntentService {
             public void run() {
                 Loop();
             }
-        }, 10000);
+        }, GPS_SCAN_PERIOD);
 
 
     }
@@ -182,11 +221,21 @@ public class PositionUpdateService extends IntentService {
                         if (task.isSuccessful()) {
                             UpdatePosition();
                         }
+                        else {
+                            Log.d(TAG, "Cannot sign on with the saved credentials");
+                        }
+                        _loop_started = false;
+                        StartLoop();
                     }
                 });
             }
+            else {
+                Log.d(TAG, "Cannot log into firebase");
+            }
         } else {
             UpdatePosition();
+            _loop_started = false;
+            StartLoop();
         }
 
 
@@ -199,31 +248,44 @@ public class PositionUpdateService extends IntentService {
         Location loc = GetCurrentLocation();
         if (loc != null) {
             // update it..
-            if (_should_update_firebase) {
+            mLocationsBuffer.add(GetLocationAsMap(loc));
+            if (_should_update_firebase && (_lastUploadToFirebase > FIREBASE_UPLOAD_PERIOD)){
+                Log.i(TAG, "Updateing Firebase");
                 FirebaseDatabase database = FirebaseDatabase.getInstance();
                 FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
                 if (currentUser != null) {
                     String uid = currentUser.getUid();
                     String ref_loc = "locations/" + uid;
+                    // add the year, month, day
+                    // note that the time is assumed to be correct (will map to database time later
+                    Calendar now = GregorianCalendar.getInstance();
+                    int year = now.get(Calendar.YEAR);
+                    String month = now.getDisplayName(Calendar.MONTH, Calendar.LONG, Locale.getDefault());
+                    int day_of_month = now.get(Calendar.DAY_OF_MONTH);
+                    ref_loc += "/" + year + "/" + month + "/" + day_of_month;
+
                     DatabaseReference myRef = database.getReference(ref_loc);
-                    myRef.push().setValue(GetLocationAsMap(loc));
+                    // create a hash map of location and
+                    Map<String, Object> tmpMap = new HashMap<>();
+                    tmpMap.put(Constants.TIMESTAMP, ServerValue.TIMESTAMP);
+                    tmpMap.put(Constants.POSITIONS, mLocationsBuffer);
+                    myRef.push().setValue(tmpMap);
+                    mLocationsBuffer.clear();
                 }
+                _lastUploadToFirebase = 0;
+            }
+            else {
+                _lastUploadToFirebase += GPS_SCAN_PERIOD;
+                // add the location to the array.
+                Log.i(TAG, "Not updateing Firebase");
+
+
             }
             // get the user id
-
-
-
-            // for each of the Messenger that is registered for ping
-            for (Messenger msgr : mClientsToPing)
-            {
-                SendPositionUpdateToClient(msgr, MSG_POSITION_UPDATE_PING);
-            }
-
-
         }
 
-        _loop_started = false;
-        StartLoop();
+
+
 
 
     }
@@ -248,7 +310,7 @@ public class PositionUpdateService extends IntentService {
     @Override
     public IBinder onBind(Intent intent) {
 
-        //return super.onBind(intent);
+
         return mMessenger.getBinder();
     }
 
@@ -274,7 +336,12 @@ public class PositionUpdateService extends IntentService {
             Log.e(TAG, re.getMessage());
         }
 
+
+
     }
+
+    // create a broadcast receiver rather than using the bind/unbine
+
 
 
 
@@ -286,17 +353,20 @@ public class PositionUpdateService extends IntentService {
 
         @Override
         public void handleMessage(Message msg) {
-            Log.e(TAG, "Message Received");
+            Log.i(TAG, "Message Received");
             switch (msg.what) {
                 case MSG_REGISTER_CLIENT:
+                    Log.i(TAG, "Position Client Registered");
                     PositionUpdateService.mClients.add(msg.replyTo);
                     break;
                 case MSG_UNREGISTER_CLIENT:
+                    Log.i(TAG, "Position Client Unregistered");
                     PositionUpdateService.mClients.remove(msg.replyTo);
                     break;
                 case MSG_START_POSITIONUPDATE:
+                    Log.i(TAG, "Position Update Request Updated");
                     if (msg.replyTo != null) {
-                        PositionUpdateService.mClientsToPing.add(msg.replyTo);
+                        //PositionUpdateService.mClientsToPing.add(msg.replyTo);
 
                         _Singleton._should_update_firebase = (msg.arg1 == 1);
 
@@ -308,10 +378,12 @@ public class PositionUpdateService extends IntentService {
                     }
                     break;
                 case MSG_STOP_POSITIONUPDATE:
-                    PositionUpdateService.mClientsToPing.remove(msg.replyTo);
+                    Log.i(TAG, "Position Update Request stopped");
+                    //PositionUpdateService.mClientsToPing.remove(msg.replyTo);
                     break;
                 case MSG_GET_POSITION_UPDATE:
                     // need to create a bundle..
+                    Log.i(TAG, "Single Position Update Request");
                     _Singleton.SendPositionUpdateToClient(msg.replyTo, MSG_GET_POSITION_UPDATE);
                     break;
                 default:

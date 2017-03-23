@@ -35,7 +35,7 @@ public class AuthentificationHelper implements FirebaseAuth.AuthStateListener{
     public final static String SAVED_EMAILS = "saved_emails";
     public final static String SAVED_PASSWORD = "saved_password";
 
-    private final static String TAG = "TAG";
+    private final static String TAG = "AuthenificationHelper";
 
     protected static AuthentificationHelper _singleton = new AuthentificationHelper();
 
@@ -74,25 +74,29 @@ public class AuthentificationHelper implements FirebaseAuth.AuthStateListener{
 
     }
 
-    public static void SavePasswordForAccount(final AuthCredential credential, final Context context, final String Femail, final IFirebaseLoginResult callback)
+    // this is to change passwords..
+    public static void SavePasswordForAccount(final AuthCredential credential, final Context context,
+                                              final String Femail, final String Password, final IFirebaseLoginResult callback)
     {
         // get the current user..
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
         if (currentUser != null)
         {
             String email = currentUser.getEmail();
-            RandomPasswordGenerator rnd = new RandomPasswordGenerator();
-            final String password = rnd.DefaultPassword();
-            currentUser.updatePassword(password).addOnCompleteListener(new OnCompleteListener<Void>(){
+           // RandomPasswordGenerator rnd = new RandomPasswordGenerator();
+            //final String password = rnd.DefaultPassword();
+            currentUser.updatePassword(Password).addOnCompleteListener(new OnCompleteListener<Void>(){
 
                 @Override
                 public void onComplete(@NonNull Task<Void> task) {
                     if (task.isSuccessful())
                     {
-                        SaveCredentials(context, Femail, password);
+                        Log.i(TAG, "Update of Password successful. Password is " + Password);
+                        SaveCredentials(context, Femail, Password);
                         callback.LoginResult(FirebaseAuth.getInstance().getCurrentUser());
                     }
                     else {
+                        Log.e(TAG, "Cannot set password");
                         callback.LoginResult(null);
                     }
                 }

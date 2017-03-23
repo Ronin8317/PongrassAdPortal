@@ -74,7 +74,7 @@ public class RandomPasswordGenerator {
         for (int idx=0;idx<buf.length;idx++) {
             buf[idx] = symbols[_singleton_Random.nextInt(symbols.length)];
         }
-        _Password += buf.toString();
+        _Password += String.valueOf(buf);
         return this;
 
     }

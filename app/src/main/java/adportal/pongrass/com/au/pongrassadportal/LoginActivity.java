@@ -111,6 +111,7 @@ public class LoginActivity extends AppCompatActivity implements
     private TextView mJSONResultView;
     protected FirebaseAuth mAuth;
     private Button mEmailSignInButton;
+    private Button mGoogleSignInButton;
     private Button mSignOutButton;
     protected GoogleApiClient mGoogleApiClient;
     protected LoginButton mFacebookLoginButton;
@@ -140,6 +141,16 @@ public class LoginActivity extends AppCompatActivity implements
         setupFacebookLogin();
         setupGoogleLogin();
         setupEmailSignin();
+        mSignOutButton = (Button)findViewById(R.id.logout_button);
+        mSignOutButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                // sign out..
+                Signout();
+            }
+        });
+
+        PrepareLoginScreen();
 
 
 
@@ -217,8 +228,8 @@ public class LoginActivity extends AppCompatActivity implements
 
     private void setupGoogleLogin()
     {
-        Button GoogleSignInButton = (Button) findViewById(R.id.google_signin_button);
-        GoogleSignInButton.setOnClickListener(new OnClickListener() {
+        mGoogleSignInButton = (Button) findViewById(R.id.google_signin_button);
+        mGoogleSignInButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
                 GoogleSignIn();
@@ -288,60 +299,15 @@ public class LoginActivity extends AppCompatActivity implements
         return false;
     }
 
-
-    /**
-
-    private void populateAutoComplete() {
-        if (!mayRequestContacts()) {
-            return;
-        }
-
-        getLoaderManager().initLoader(0, null, this);
+    private void Signout()
+    {
+        // sign out of Firebase
+        FirebaseAuth.getInstance().signOut();
+       PrepareLoginScreen();
     }
-     **/
 
-    // remove the need to get contacts..
-    /**
-    private boolean mayRequestContacts() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-            return true;
-        }
-        if (checkSelfPermission(READ_CONTACTS) == PackageManager.PERMISSION_GRANTED) {
-            return true;
-        }
-        if (shouldShowRequestPermissionRationale(READ_CONTACTS)) {
-            Snackbar.make(mEmailView, R.string.permission_rationale, Snackbar.LENGTH_INDEFINITE)
-                    .setAction(android.R.string.ok, new View.OnClickListener() {
-                        @Override
-                        @TargetApi(Build.VERSION_CODES.M)
-                        public void onClick(View v) {
-                            requestPermissions(new String[]{READ_CONTACTS,ACCESS_FINE_LOCATION,ACCESS_COARSE_LOCATION,CAMERA, WRITE_EXTERNAL_STORAGE }, REQUEST_READ_CONTACTS);
-                        }
-                    });
-        } else {
-            requestPermissions(new String[]{READ_CONTACTS,ACCESS_FINE_LOCATION,ACCESS_COARSE_LOCATION,CAMERA, WRITE_EXTERNAL_STORAGE}, REQUEST_READ_CONTACTS);
-        }
-        return false;
-    }
-     **/
 
-    /**
-     * Callback received when a permissions request has been completed.
-     */
-    /**
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
-                                           @NonNull int[] grantResults) {
-        if (requestCode == REQUEST_READ_CONTACTS) {
-
-                if (grantResults.length >= 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    populateAutoComplete();
-                }
-
-        }
-    }
-                                           **/
 
     private void GoogleSignIn() {
         ShowWaiting();
@@ -380,18 +346,8 @@ public class LoginActivity extends AppCompatActivity implements
 
                         if (task.isSuccessful()) {
 
-                            AuthentificationHelper.SavePasswordForAccount(credential, LoginActivity.this, FEmail, new IFirebaseLoginResult(){
 
-                                @Override
-                                public void LoginResult(FirebaseUser user) {
-                                    StopWaiting();
-                                    if (user != null) {
-                                        StartPositionUpdateService();
-                                    }
 
-                                }
-                            });
-                            /**
                             AuthentificationHelper.LinkWithCredentials(credential, LoginActivity.this, FEmail, new IFirebaseLoginResult() {
                                 @Override
                                 public void LoginResult(FirebaseUser user) {
@@ -401,7 +357,6 @@ public class LoginActivity extends AppCompatActivity implements
                                     }
                                 }
                             });
-                             **/
 
                         }
                         else {
@@ -899,15 +854,17 @@ public class LoginActivity extends AppCompatActivity implements
         super.onStart();
         mAuth = FirebaseAuth.getInstance();
         mAuth.addAuthStateListener(AuthentificationHelper.GetAuthorizationHandler());
-        Intent updateIntent = new Intent(this, PositionUpdateService.class);
-        bindService(updateIntent, mConnection, Context.BIND_AUTO_CREATE);
+        // start the service, but does not bind..
+
+        //Intent updateIntent = new Intent(this, PositionUpdateService.class);
+
+        //bindService(updateIntent, mConnection, Context.BIND_AUTO_CREATE);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        Intent updateIntent = new Intent(this, PositionUpdateService.class);
-        bindService(updateIntent, mConnection, Context.BIND_AUTO_CREATE);
+
     }
 
     @Override
@@ -937,6 +894,7 @@ public class LoginActivity extends AppCompatActivity implements
     protected void onDestroy() {
         super.onDestroy();
         // CancelAlarm();
+
         //Intent updateIntent = new Intent(this, PositionUpdateService.class);
         //startService(updateIntent);
         try {
@@ -948,6 +906,13 @@ public class LoginActivity extends AppCompatActivity implements
         {
             Log.e(TAG, re.getMessage());
         }
+
+
+        // send procast
+        //Intent intent = new Intent(getString(R.string.pongrass_adportal_broadcast));
+        //intent.putExtra("action", getString(R.string.pongrass_service_stop));
+
+        //LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
 
     }
 
@@ -1070,38 +1035,22 @@ public class LoginActivity extends AppCompatActivity implements
     // this is a timer..
     private void StartPositionUpdateService()
     {
-        // create the listener..
-        //mListener = new PositionUpdateListener(this);
-        //mReceiver = new PositionUpdateReceiver(mListener);
+      PrepareLogoutScreen();
+        Intent updateIntent = new Intent(getBaseContext(), PositionUpdateService.class);
+        startService(updateIntent);
 
-        // register..
-        /**
-        IntentFilter positionIntentFilter = new IntentFilter(Constants.BROADCAST_ACTION);
-        //positionIntentFilter.addDataScheme("http");
-        LocalBroadcastManager.getInstance(this).registerReceiver(mReceiver, positionIntentFilter);
+        // bindService(updateIntent, mConnection, Context.BIND_AUTO_CREATE);
 
 
+        // send procast
+        //Intent intent = new Intent("adportal.pongrass.com.au.pongrassadportal.POSITIONUPDATE");
+        //intent.putExtra("action", getString(R.string.pongrass_service_start));
 
-        mHandler.postDelayed(mPositionBroadcast, 0);
+        //LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
 
 
-
-         **/
-
-        //StartTakingPhotos();
 
         /**
-        if (PositionUpdateService.isRunning() == false) {
-            Intent updateIntent = new Intent(getBaseContext(), PositionUpdateService.class);
-            //updateIntent.putExtra(Intent.EXTRA_TEXT, "abc");
-            startService(updateIntent);
-
-        }
-         **/
-
-
-        //StartAlarm();
-
         Message msg = Message.obtain(null, PositionUpdateService.MSG_START_POSITIONUPDATE, 1, 0);
         msg.replyTo = mMessangerClient;
         try {
@@ -1113,6 +1062,9 @@ public class LoginActivity extends AppCompatActivity implements
         {
             Log.e(TAG, re.getMessage());
         }
+
+
+         **/
 
 
     }
@@ -1176,8 +1128,9 @@ public class LoginActivity extends AppCompatActivity implements
         mEmailSignInButton.setVisibility(View.VISIBLE);
         mNewEmailView.setVisibility(View.VISIBLE);
         mPasswordView.setVisibility(View.VISIBLE);
-        this.mFacebookLoginButton.setVisibility(View.VISIBLE);
-        this.mSignOutButton.setVisibility(View.GONE);
+        mGoogleSignInButton.setVisibility(View.VISIBLE);
+        mFacebookLoginButton.setVisibility(View.VISIBLE);
+        mSignOutButton.setVisibility(View.GONE);
 
 
     }
@@ -1187,6 +1140,7 @@ public class LoginActivity extends AppCompatActivity implements
         mFacebookLoginButton.setVisibility(View.GONE);
         mEmailSignInButton.setVisibility(View.GONE);
         mNewEmailView.setVisibility(View.GONE);
+        mGoogleSignInButton.setVisibility(View.GONE);
         mPasswordView.setVisibility(View.GONE);
         mFacebookLoginButton.setVisibility(View.GONE);
         mSignOutButton.setVisibility(View.VISIBLE);
