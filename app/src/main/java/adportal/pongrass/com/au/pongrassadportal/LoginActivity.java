@@ -76,10 +76,13 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
 
+import static adportal.pongrass.com.au.pongrassadportal.Constants.*;
 import static android.Manifest.permission.ACCESS_COARSE_LOCATION;
 import static android.Manifest.permission.ACCESS_FINE_LOCATION;
 import static android.Manifest.permission.CAMERA;
 import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
+
+
 
 /**
  * A login screen that offers login via email/password.
@@ -113,6 +116,8 @@ public class LoginActivity extends AppCompatActivity implements
     private Button mEmailSignInButton;
     private Button mGoogleSignInButton;
     private Button mSignOutButton;
+    private Button mStartPositionUpdate;
+    private Button mStopPositionUpdate;
     protected GoogleApiClient mGoogleApiClient;
     protected LoginButton mFacebookLoginButton;
     protected CallbackManager mFacebookCallbackManager;
@@ -136,6 +141,11 @@ public class LoginActivity extends AppCompatActivity implements
 
         // does not setup content view..
 
+        // Start the Service if it is not running..
+
+        Intent updateIntent = new Intent(getBaseContext(), PositionUpdateService.class);
+        startService(updateIntent);
+
 
         setContentView(R.layout.activity_login);
         setupFacebookLogin();
@@ -147,6 +157,22 @@ public class LoginActivity extends AppCompatActivity implements
             public void onClick(View view) {
                 // sign out..
                 Signout();
+            }
+        });
+
+        mStartPositionUpdate = (Button)findViewById(R.id.start_position_update);
+        mStartPositionUpdate.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                StartPositionUpdate();
+            }
+        });
+
+        mStopPositionUpdate = (Button)findViewById(R.id.stop_position_update);
+        mStopPositionUpdate.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                StopPositionUpdate();
             }
         });
 
@@ -827,12 +853,15 @@ public class LoginActivity extends AppCompatActivity implements
         public void onServiceConnected(ComponentName componentName, IBinder service) {
             mMessengerService = new Messenger(service);
             try {
-                Message msg = Message.obtain(Message.obtain(null, PositionUpdateService.MSG_REGISTER_CLIENT));
+                // request server status..
+
+                Message msg = Message.obtain(Message.obtain(null, MSG_REGISTER_CLIENT));
                 msg.replyTo = mMessangerClient;
                 mMessengerService.send(msg);
 
-
-
+                msg = Message.obtain(null, MSG_REQUEST_SERVER_STATUS);
+                msg.replyTo = mMessangerClient;
+                mMessengerService.send(msg);
             }
             catch(RemoteException re)
             {
@@ -856,14 +885,15 @@ public class LoginActivity extends AppCompatActivity implements
         mAuth.addAuthStateListener(AuthentificationHelper.GetAuthorizationHandler());
         // start the service, but does not bind..
 
-        //Intent updateIntent = new Intent(this, PositionUpdateService.class);
-
-        //bindService(updateIntent, mConnection, Context.BIND_AUTO_CREATE);
+        Intent updateIntent = new Intent(this, PongrassCommunicationService.class);
+        bindService(updateIntent, mConnection, Context.BIND_AUTO_CREATE);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        Intent updateIntent = new Intent(this, PongrassCommunicationService.class);
+        bindService(updateIntent, mConnection, Context.BIND_AUTO_CREATE);
 
     }
 
@@ -877,9 +907,10 @@ public class LoginActivity extends AppCompatActivity implements
         // unregister the service
         try {
             if (mMessengerService != null) {
-                Message msg = Message.obtain(Message.obtain(null, PositionUpdateService.MSG_STOP_POSITIONUPDATE));
+                Message msg = Message.obtain(Message.obtain(null, MSG_UNREGISTER_CLIENT));
                 msg.replyTo = mMessangerClient;
                 mMessengerService.send(msg);
+                unbindService(mConnection);
             }
         }
         catch (RemoteException re)
@@ -893,14 +924,13 @@ public class LoginActivity extends AppCompatActivity implements
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        // CancelAlarm();
 
-        //Intent updateIntent = new Intent(this, PositionUpdateService.class);
-        //startService(updateIntent);
         try {
-            Message msg = Message.obtain(Message.obtain(null, PositionUpdateService.MSG_UNREGISTER_CLIENT));
+            Message msg = Message.obtain(Message.obtain(null, MSG_UNREGISTER_CLIENT));
             msg.replyTo = mMessangerClient;
             mMessengerService.send(msg);
+            // unbind
+            unbindService(mConnection);
         }
         catch (RemoteException re)
         {
@@ -914,6 +944,7 @@ public class LoginActivity extends AppCompatActivity implements
 
         //LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
 
+        unbindService(mConnection);
     }
 
 
@@ -996,27 +1027,14 @@ public class LoginActivity extends AppCompatActivity implements
                 });
     }
 
-    private Handler mHandler = new Handler();
 
-    private Runnable mPositionBroadcast = new Runnable()
-    {
-
-        @Override
-        public void run() {
-            Intent localIntent = new Intent(Constants.BROADCAST_ACTION);
-
-            LocalBroadcastManager.getInstance(LoginActivity.this).sendBroadcast(localIntent);
-
-            mHandler.postDelayed(this, Constants.POSITION_UPDATE_FREQUENCY);
-        };
-    };
 
     protected class IncomingHandler extends Handler {
         @Override
         public void handleMessage(Message msg) {
             switch (msg.what) {
-                case PositionUpdateService.MSG_POSITION_UPDATE_PING:
-                case PositionUpdateService.MSG_GET_POSITION_UPDATE:
+
+                case MSG_GET_POSITION_UPDATE:
                     // get the bundle
                     Bundle bundle = msg.getData();
                     if (bundle != null) {
@@ -1026,6 +1044,16 @@ public class LoginActivity extends AppCompatActivity implements
                         Toast.makeText(LoginActivity.this, text_to_display, Toast.LENGTH_SHORT).show();
                     }
                     break;
+                case MSG_REQUEST_SERVER_STATUS:
+                    if (msg.arg1 == 0)
+                    {
+                        Log.d(TAG, "No service found. Starting server");
+                        Intent serverIntent = new Intent(LoginActivity.this, PositionUpdateService.class);
+                        startService(serverIntent);
+                    }
+                    else {
+                        Log.d(TAG, "Service already started");
+                    }
                 default:
                     super.handleMessage(msg);
             }
@@ -1033,44 +1061,58 @@ public class LoginActivity extends AppCompatActivity implements
     };
 
     // this is a timer..
-    private void StartPositionUpdateService()
-    {
-      PrepareLogoutScreen();
-        Intent updateIntent = new Intent(getBaseContext(), PositionUpdateService.class);
-        startService(updateIntent);
-
-        // bindService(updateIntent, mConnection, Context.BIND_AUTO_CREATE);
+    private void StartPositionUpdateService() {
+        PrepareLogoutScreen();
 
 
+    }
+
+
+    private void StartPositionUpdate() {
         // send procast
-        //Intent intent = new Intent("adportal.pongrass.com.au.pongrassadportal.POSITIONUPDATE");
-        //intent.putExtra("action", getString(R.string.pongrass_service_start));
+        Intent intent = new Intent("adportal.pongrass.com.au.pongrassadportal.POSITIONUPDATE");
+        intent.putExtra("action", getString(R.string.pongrass_service_start));
 
-        //LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
 
-
-
-        /**
-        Message msg = Message.obtain(null, PositionUpdateService.MSG_START_POSITIONUPDATE, 1, 0);
+        Message msg = Message.obtain(null, MSG_START_POSITIONUPDATE, 1, 0);
         msg.replyTo = mMessangerClient;
         try {
             if (mMessengerService != null) {
                 mMessengerService.send(msg);
             }
+            else {
+                Log.d(TAG, "Messenger service not initialized");
+            }
         }
-        catch (RemoteException re)
-        {
+        catch (RemoteException re) {
             Log.e(TAG, re.getMessage());
         }
+    }
 
+    private void StopPositionUpdate() {
+        // send procast
 
-         **/
+        Message msg = Message.obtain(null, MSG_STOP_POSITIONUPDATE, 1, 0);
+        msg.replyTo = mMessangerClient;
+        try {
+            if (mMessengerService != null) {
+                mMessengerService.send(msg);
+            }
+            else {
 
+                Log.d(TAG, "Messenger service not initialized");
 
+            }
+        }
+        catch (RemoteException re) {
+            Log.e(TAG, re.getMessage());
+        }
     }
 
     public static int FREQUENCY = 30000;
 
+    /**
     protected void StartAlarm()
     {
 
@@ -1093,6 +1135,8 @@ public class LoginActivity extends AppCompatActivity implements
             pending.cancel();
         }
     }
+
+     **/
 
 
     private void StartTakingPhotos()
@@ -1131,6 +1175,8 @@ public class LoginActivity extends AppCompatActivity implements
         mGoogleSignInButton.setVisibility(View.VISIBLE);
         mFacebookLoginButton.setVisibility(View.VISIBLE);
         mSignOutButton.setVisibility(View.GONE);
+        mStartPositionUpdate.setVisibility(View.GONE);
+        mStopPositionUpdate.setVisibility(View.GONE);
 
 
     }
@@ -1144,6 +1190,8 @@ public class LoginActivity extends AppCompatActivity implements
         mPasswordView.setVisibility(View.GONE);
         mFacebookLoginButton.setVisibility(View.GONE);
         mSignOutButton.setVisibility(View.VISIBLE);
+        mStartPositionUpdate.setVisibility(View.VISIBLE);
+        mStopPositionUpdate.setVisibility(View.VISIBLE);
 
     }
 

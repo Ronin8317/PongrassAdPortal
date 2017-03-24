@@ -35,11 +35,14 @@
             </intent-filter>
         </activity>
 
-
+        <service android:name=".PongrassCommunicationService"/>
 
         <service
             android:name=".PositionUpdateService"
-            android:exported="false" android:process=":remote"/>
+            android:exported="false" android:process=":remote">
+
+            </service>
+
         <service android:name=".PongrassFirebaseMessagingService">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />

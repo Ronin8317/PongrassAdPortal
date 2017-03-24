@@ -20,4 +20,36 @@ public class Constants {
 
     public static final String DB_LOCATION = "location";
 
+    // sent from the client.
+    // client -> communication service
+    public static final int MSG_REGISTER_CLIENT = 1;
+    public static final int MSG_UNREGISTER_CLIENT = 2;
+
+    // sent from the server
+    // server -> communication service
+    public static final int MSG_REGISTER_SERVER = 3;
+    public static final int MSG_UNREGISTER_SERVER = 4;
+
+    public static final int MSG_REQUEST_SERVER_STATUS = 5;
+
+
+
+    // start the position update request ping. Note that if arg1 is 1, then it'll update the Firebase database. otherwise it'll just update the client
+    // sent from the client to the server
+    // client -> communication service -> server
+    public static final int MSG_START_POSITIONUPDATE = 100;
+    // stop the position update request ping
+    public static final int MSG_STOP_POSITIONUPDATE = 101;
+
+
+
+    // get the current position, from client to server
+    // client <-> communication service <-> server
+    public static final int MSG_GET_POSITION_UPDATE = 102;
+    public static final int MSG_GET_POSITION_UPDATE_RESPONSE = 103;
+
+    // error
+    public static final int ERR_NO_SERVER_REGISTERED = -100;
+
+
 }

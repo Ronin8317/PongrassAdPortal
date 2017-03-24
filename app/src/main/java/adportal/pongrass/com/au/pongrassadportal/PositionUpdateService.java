@@ -3,9 +3,11 @@ package adportal.pongrass.com.au.pongrassadportal;
 import android.app.IntentService;
 import android.app.Service;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationManager;
@@ -42,6 +44,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import static adportal.pongrass.com.au.pongrassadportal.Constants.*;
 
 
 /**
@@ -59,22 +62,11 @@ public class PositionUpdateService extends Service {
 
     public final static String TAG = "PositionUpdateService";
 
-    public static List<Messenger> mClients = new ArrayList<>();
-    public static List<Messenger> mClientsToPing = new ArrayList<>();
 
 
-    public static final int MSG_REGISTER_CLIENT = 1;
-    public static final int MSG_UNREGISTER_CLIENT = 2;
-    // start the position update request ping. Note that if arg1 is 1, then it'll update the Firebase database. otherwise it'll just update the client
 
-    public static final int MSG_START_POSITIONUPDATE = 100;
-    // stop the position update request ping
-    public static final int MSG_STOP_POSITIONUPDATE = 101;
-    // get the current position, without pinging
-    public static final int MSG_GET_POSITION_UPDATE = 102;
-    // pinging the client about position request.
 
-    public static final int MSG_POSITION_UPDATE_PING = 103;
+
 
     public static final int GPS_SCAN_PERIOD = 30000; // every 30 seconds..
     public static final int FIREBASE_UPLOAD_PERIOD = 300000; // every 5 minutes..
@@ -86,23 +78,31 @@ public class PositionUpdateService extends Service {
 
     private List<Map<String, String>> mLocationsBuffer = new ArrayList<>();
 
-    private BroadcastReceiver mServiceBroadcastReceived = new BroadcastReceiver() {
+
+    protected Messenger mMessengerCommunicator = null;
+
+    private ServiceConnection mConnection = new ServiceConnection(){
+
         @Override
-        public void onReceive(Context context, Intent intent) {
-            String action = intent.getStringExtra("action");
-            Log.i(TAG, "Action received is " + action);
-            if (getString(R.string.pongrass_service_start).equals(action))
-            {
-                _should_update_firebase = true;
-                if (!_loop_started) {
-                    StartLoop();
-                }
+        public void onServiceConnected(ComponentName componentName, IBinder service) {
+            mMessengerCommunicator = new Messenger(service);
+            try {
+                Log.d(TAG, "Registering Server");
+                Message msg = Message.obtain(Message.obtain(null, MSG_REGISTER_SERVER));
+                msg.replyTo = mMessenger;
+                mMessengerCommunicator.send(msg);
             }
-            else if (getString(R.string.pongrass_service_stop).equals(action))
+            catch(RemoteException re)
             {
-                _should_update_firebase = false;
+                Log.e(TAG, re.getMessage());
+                mMessengerCommunicator = null;
             }
 
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName componentName) {
+            mMessengerCommunicator = null;
         }
     };
 
@@ -115,15 +115,10 @@ public class PositionUpdateService extends Service {
         //StartLoop();
         _Singleton = this;
 
-        IntentFilter filter = new IntentFilter();
 
-
-        String BroadcastActionString = "adportal.pongrass.com.au.pongrassadportal.POSITIONUPDATE";
-        filter.addAction(BroadcastActionString);
-
-        LocalBroadcastManager.getInstance(this).registerReceiver(mServiceBroadcastReceived,
-                filter);
-
+        Log.d(TAG, "Binding to Communication thread");
+        Intent intent = new Intent(this, PongrassCommunicationService.class);
+        bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
     }
 
     @Override
@@ -131,7 +126,8 @@ public class PositionUpdateService extends Service {
         super.onDestroy();
         Log.d(TAG, "Position Update is destroyed");
         _isRunning = false;
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(mServiceBroadcastReceived);
+      // unbind
+        unbindService(mConnection);
     }
 
     public static boolean isRunning() {
@@ -249,6 +245,9 @@ public class PositionUpdateService extends Service {
         if (loc != null) {
             // update it..
             mLocationsBuffer.add(GetLocationAsMap(loc));
+            // save it to the preference
+
+
             if (_should_update_firebase && (_lastUploadToFirebase > FIREBASE_UPLOAD_PERIOD)){
                 Log.i(TAG, "Updateing Firebase");
                 FirebaseDatabase database = FirebaseDatabase.getInstance();
@@ -355,36 +354,22 @@ public class PositionUpdateService extends Service {
         public void handleMessage(Message msg) {
             Log.i(TAG, "Message Received");
             switch (msg.what) {
-                case MSG_REGISTER_CLIENT:
-                    Log.i(TAG, "Position Client Registered");
-                    PositionUpdateService.mClients.add(msg.replyTo);
-                    break;
-                case MSG_UNREGISTER_CLIENT:
-                    Log.i(TAG, "Position Client Unregistered");
-                    PositionUpdateService.mClients.remove(msg.replyTo);
-                    break;
+
                 case MSG_START_POSITIONUPDATE:
                     Log.i(TAG, "Position Update Request Updated");
-                    if (msg.replyTo != null) {
-                        //PositionUpdateService.mClientsToPing.add(msg.replyTo);
 
-                        _Singleton._should_update_firebase = (msg.arg1 == 1);
+                    _Singleton._should_update_firebase = (msg.arg1 == 1);
+                    _Singleton.StartLoop();
 
-
-                        _Singleton.StartLoop();
-                    }
-                    else {
-                        Log.e(TAG, "Reply to in Start position update is null");
-                    }
                     break;
                 case MSG_STOP_POSITIONUPDATE:
                     Log.i(TAG, "Position Update Request stopped");
-                    //PositionUpdateService.mClientsToPing.remove(msg.replyTo);
+
                     break;
                 case MSG_GET_POSITION_UPDATE:
-                    // need to create a bundle..
+
                     Log.i(TAG, "Single Position Update Request");
-                    _Singleton.SendPositionUpdateToClient(msg.replyTo, MSG_GET_POSITION_UPDATE);
+                    _Singleton.SendPositionUpdateToClient(msg.replyTo, MSG_GET_POSITION_UPDATE_RESPONSE);
                     break;
                 default:
                     super.handleMessage(msg);

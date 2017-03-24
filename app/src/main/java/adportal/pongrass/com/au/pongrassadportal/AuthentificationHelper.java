@@ -19,6 +19,7 @@ import com.google.firebase.auth.FirebaseUser;
 
 import java.math.BigInteger;
 import java.security.SecureRandom;
+import java.util.Map;
 
 /**
  * This is the class that handles storing the login credentials so that you don't have to log in every time the application starts up
@@ -64,15 +65,32 @@ public class AuthentificationHelper implements FirebaseAuth.AuthStateListener{
         editor.commit();
 
 
+        /**
         // assert getting it is the same
         pref = context.getSharedPreferences(context.getString(R.string.preference_file_key), Context.MODE_PRIVATE);
         String stored_email = pref.getString(SAVED_EMAILS, "");
         String stored_password = pref.getString(SAVED_PASSWORD, "");
         assert(stored_email.equals(saved_email));
         assert(stored_password.equals(saved_password));
-
+         **/
 
     }
+
+    public static void SaveString(Context context, String key, String value)
+    {
+        SharedPreferences pref = context.getSharedPreferences(context.getString(R.string.preference_file_key), Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = pref.edit();
+        editor.putString(key, value);
+        editor.commit();
+    }
+
+    public static String GetString(Context context, String key)
+    {
+        SharedPreferences pref = context.getSharedPreferences(context.getString(R.string.preference_file_key), Context.MODE_PRIVATE);
+        return pref.getString(key, "");
+
+    }
+
 
     // this is to change passwords..
     public static void SavePasswordForAccount(final AuthCredential credential, final Context context,
