@@ -68,10 +68,13 @@ public class PositionUpdateService extends Service {
 
 
 
-    public static final int GPS_SCAN_PERIOD = 30000; // every 30 seconds..
-    public static final int FIREBASE_UPLOAD_PERIOD = 300000; // every 5 minutes..
 
     private static PositionUpdateService _Singleton = null;
+
+    public static PositionUpdateService getInstance()
+    {
+        return _Singleton;
+    }
 
     // counter for firebase upload
     private int _lastUploadToFirebase = 0;
@@ -112,13 +115,22 @@ public class PositionUpdateService extends Service {
         Log.d(TAG, "Position Update is created");
         FirebaseApp.initializeApp(this);
         _isRunning = true;
-        //StartLoop();
+
         _Singleton = this;
 
 
         Log.d(TAG, "Binding to Communication thread");
         Intent intent = new Intent(this, PongrassCommunicationService.class);
         bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
+
+
+        RestoreState();
+        if (_continue_loop)
+        {
+            StartLoop();
+        }
+
+
     }
 
     @Override
@@ -128,6 +140,8 @@ public class PositionUpdateService extends Service {
         _isRunning = false;
       // unbind
         unbindService(mConnection);
+
+        SaveState();
     }
 
     public static boolean isRunning() {
@@ -138,7 +152,7 @@ public class PositionUpdateService extends Service {
     // start it..
     public final int POSITION_UPDATE_FREQUENCY = 10000; // 10 minutes
 
-    public boolean _continue_loop = true;
+    public boolean _continue_loop = false;
     public boolean _loop_started = false;
     public boolean _should_update_firebase = false;
 
@@ -183,10 +197,12 @@ public class PositionUpdateService extends Service {
         return result;
     }
 
-
+   protected Handler mCurrentHandler = null;
 
     protected void StartLoop() {
         if (_loop_started) return;
+
+        if (!_continue_loop) return;
 
         Log.d(TAG, "Starting Loop");
         // schedule a handler..
@@ -195,11 +211,51 @@ public class PositionUpdateService extends Service {
 
             @Override
             public void run() {
-                Loop();
+                if (_continue_loop) {
+                    Loop();
+                };
             }
         }, GPS_SCAN_PERIOD);
 
 
+    }
+
+    protected void CancelLoop()
+    {
+        _continue_loop = false;
+    }
+
+    protected void SaveState()
+    {
+        AuthentificationHelper.SaveString(this, "continue_loop", (_continue_loop ? "1" : "0"));
+        AuthentificationHelper.SaveString(this, "update_firebase", (_should_update_firebase ? "1" : "0"));
+        Log.d(TAG,"Save State");
+    }
+
+    protected void RestoreState()
+    {
+        _continue_loop = "1".equals(AuthentificationHelper.GetString(this, "continue_loop"));
+        _should_update_firebase = "1".equals(AuthentificationHelper.GetString(this, "update_firebase"));
+        Log.d(TAG,"Restore State");
+    }
+
+    protected void StartPositionUpdate(boolean sendToFirebase)
+    {
+        _should_update_firebase = sendToFirebase;
+        if (_continue_loop) return;
+
+        _continue_loop = true;
+
+        StartLoop();
+
+        SaveState();
+
+    }
+
+    protected void StopPositionUpdate()
+    {
+        _should_update_firebase = false;
+        CancelLoop();
     }
 
     protected void Loop()
@@ -207,6 +263,8 @@ public class PositionUpdateService extends Service {
 
         final Context f_context = this;
         if (FirebaseAuth.getInstance().getCurrentUser() == null) {
+            LogOntoFirebase(true);
+            /**
             Log.d(TAG, "Log into Firebase");
             AuthCredential cred;
             if ((cred = AuthentificationHelper.GetSavedCredentialsIfExists(f_context)) != null) {
@@ -228,6 +286,7 @@ public class PositionUpdateService extends Service {
             else {
                 Log.d(TAG, "Cannot log into firebase");
             }
+             **/
         } else {
             UpdatePosition();
             _loop_started = false;
@@ -235,6 +294,37 @@ public class PositionUpdateService extends Service {
         }
 
 
+
+    }
+
+
+    protected void LogOntoFirebase(final boolean startLoop)
+    {
+
+        final Context f_context = this;
+        AuthCredential cred;
+        if ((cred = AuthentificationHelper.GetSavedCredentialsIfExists(f_context)) != null) {
+            // got the credential..
+            FirebaseAuth.getInstance().signInWithCredential(cred).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+                @Override
+                public void onComplete(@NonNull Task<AuthResult> task) {
+                    if (task.isSuccessful()) {
+                        Log.d(TAG, "Log onto Firebase successfully");
+                        if (startLoop)
+                        {
+                            _loop_started = false;
+                            StartLoop();
+                        }
+                    }
+                    else {
+                        Log.d(TAG, "Cannot sign on with the saved credentials");
+                    }
+                }
+            });
+        }
+        else {
+            Log.d(TAG, "Cannot log into firebase");
+        }
 
     }
 
@@ -248,8 +338,8 @@ public class PositionUpdateService extends Service {
             // save it to the preference
 
 
-            if (_should_update_firebase && (_lastUploadToFirebase > FIREBASE_UPLOAD_PERIOD)){
-                Log.i(TAG, "Updateing Firebase");
+            if (_should_update_firebase && (_lastUploadToFirebase >= FIREBASE_UPLOAD_PERIOD)){
+                Log.i(TAG, "Updating Firebase");
                 FirebaseDatabase database = FirebaseDatabase.getInstance();
                 FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
                 if (currentUser != null) {
@@ -270,13 +360,24 @@ public class PositionUpdateService extends Service {
                     tmpMap.put(Constants.POSITIONS, mLocationsBuffer);
                     myRef.push().setValue(tmpMap);
                     mLocationsBuffer.clear();
+                    _lastUploadToFirebase = 0;
                 }
-                _lastUploadToFirebase = 0;
+                else {
+                    Log.d(TAG, "There is no current user for Firebase");
+                    // try to log on
+                    LogOntoFirebase(false);
+                }
+
             }
             else {
                 _lastUploadToFirebase += GPS_SCAN_PERIOD;
                 // add the location to the array.
-                Log.i(TAG, "Not updateing Firebase");
+                if (_should_update_firebase) {
+                    Log.i(TAG, "Pooling updates before updating firebase");
+                }
+                else {
+                    Log.d(TAG, "Updating Firebase is turned off");
+                }
 
 
             }
@@ -314,6 +415,8 @@ public class PositionUpdateService extends Service {
     }
 
 
+
+
     void SendPositionUpdateToClient(Messenger client, int code) {
         Message msg = Message.obtain(null, code);
         // create a bundle
@@ -345,6 +448,9 @@ public class PositionUpdateService extends Service {
 
 
 
+
+
+
     /**
      * Handler of incoming messages from clients.
      */
@@ -353,24 +459,39 @@ public class PositionUpdateService extends Service {
         @Override
         public void handleMessage(Message msg) {
             Log.i(TAG, "Message Received");
+            PositionUpdateService serviceMain = PositionUpdateService.getInstance();
+            if (serviceMain == null)
+            {
+                super.handleMessage(msg);
+                return;
+            }
+
             switch (msg.what) {
 
                 case MSG_START_POSITIONUPDATE:
-                    Log.i(TAG, "Position Update Request Updated");
+                    Log.d(TAG, "Position Update Request Updated");
+                    serviceMain.StartPositionUpdate(msg.arg1 == 1);
 
-                    _Singleton._should_update_firebase = (msg.arg1 == 1);
-                    _Singleton.StartLoop();
 
                     break;
                 case MSG_STOP_POSITIONUPDATE:
-                    Log.i(TAG, "Position Update Request stopped");
-
+                    Log.d(TAG, "Position Update Request stopped");
+                    serviceMain.StopPositionUpdate();
                     break;
                 case MSG_GET_POSITION_UPDATE:
 
-                    Log.i(TAG, "Single Position Update Request");
-                    _Singleton.SendPositionUpdateToClient(msg.replyTo, MSG_GET_POSITION_UPDATE_RESPONSE);
+                    Log.d(TAG, "Single Position Update Request");
+                    serviceMain.SendPositionUpdateToClient(msg.replyTo, MSG_GET_POSITION_UPDATE_RESPONSE);
                     break;
+                case MSG_CREATE_USER :
+                    Log.d(TAG, "Create user");
+                    // get the bundle with the intent
+                    Bundle bundle = msg.getData();
+                    if (!FieldValidation.validateUserInfo(bundle))
+                    {
+
+                    }
+
                 default:
                     super.handleMessage(msg);
             }

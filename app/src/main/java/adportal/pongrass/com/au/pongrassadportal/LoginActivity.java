@@ -847,6 +847,8 @@ public class LoginActivity extends AppCompatActivity implements
     private Messenger mMessengerService = null;
     private Messenger mMessangerClient = new Messenger(new IncomingHandler());
 
+    private boolean mConnectionBinded = false;
+
     private ServiceConnection mConnection = new ServiceConnection(){
 
         @Override
@@ -887,6 +889,7 @@ public class LoginActivity extends AppCompatActivity implements
 
         Intent updateIntent = new Intent(this, PongrassCommunicationService.class);
         bindService(updateIntent, mConnection, Context.BIND_AUTO_CREATE);
+        mConnectionBinded = true;
     }
 
     @Override
@@ -894,6 +897,7 @@ public class LoginActivity extends AppCompatActivity implements
         super.onResume();
         Intent updateIntent = new Intent(this, PongrassCommunicationService.class);
         bindService(updateIntent, mConnection, Context.BIND_AUTO_CREATE);
+        mConnectionBinded = false;
 
     }
 
@@ -911,6 +915,7 @@ public class LoginActivity extends AppCompatActivity implements
                 msg.replyTo = mMessangerClient;
                 mMessengerService.send(msg);
                 unbindService(mConnection);
+                mConnectionBinded = false;
             }
         }
         catch (RemoteException re)
@@ -926,11 +931,16 @@ public class LoginActivity extends AppCompatActivity implements
         super.onDestroy();
 
         try {
-            Message msg = Message.obtain(Message.obtain(null, MSG_UNREGISTER_CLIENT));
-            msg.replyTo = mMessangerClient;
-            mMessengerService.send(msg);
-            // unbind
-            unbindService(mConnection);
+
+            // unbind if onStop is not called for some reason
+            if (mConnectionBinded ) {
+                Message msg = Message.obtain(Message.obtain(null, MSG_UNREGISTER_CLIENT));
+                msg.replyTo = mMessangerClient;
+                mMessengerService.send(msg);
+
+                mConnectionBinded = false;
+                unbindService(mConnection);
+            };
         }
         catch (RemoteException re)
         {
@@ -938,13 +948,7 @@ public class LoginActivity extends AppCompatActivity implements
         }
 
 
-        // send procast
-        //Intent intent = new Intent(getString(R.string.pongrass_adportal_broadcast));
-        //intent.putExtra("action", getString(R.string.pongrass_service_stop));
 
-        //LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
-
-        unbindService(mConnection);
     }
 
 
