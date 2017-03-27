@@ -57,4 +57,10 @@ Be it therefore enacted by the Queen‘s most Excellent Majesty, by
 and with the advice and consent of the Lords Spiritual and
 Temporal, and Commons, in this present Parliament assembled,
 and by the authority of the same, as follows:</string>
+    <string name="title_location_list">Locations</string>
+    <string name="title_location_detail">Location Detail</string>
+    <string name="title_user_list">Users</string>
+    <string name="title_user_detail">User Detail</string>
+    <string name="title_event_list">Events</string>
+    <string name="title_event_detail">Event Detail</string>
 </resources>
