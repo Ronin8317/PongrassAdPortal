@@ -127,7 +127,20 @@
         <activity
             android:name=".NavigationActivity"
             android:label="@string/title_activity_navigation"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".ScheduleListActivity"
+            android:label="@string/title_schedule_list"
             android:theme="@style/AppTheme.NoActionBar"></activity>
+        <activity
+            android:name=".ScheduleDetailActivity"
+            android:label="@string/title_schedule_detail"
+            android:parentActivityName=".ScheduleListActivity"
+            android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="adportal.pongrass.com.au.pongrassadportal.ScheduleListActivity" />
+        </activity>
     </application>
 
 </manifest>

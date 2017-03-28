@@ -78,4 +78,6 @@ and by the authority of the same, as follows:</string>
     <string name="what">What</string>
     <string name="accounts">Accounts</string>
     <string name="settings">Settings</string>
+    <string name="title_schedule_list">Schedules</string>
+    <string name="title_schedule_detail">Schedule Detail</string>
 </resources>
