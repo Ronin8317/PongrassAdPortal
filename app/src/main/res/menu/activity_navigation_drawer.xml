@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_friends"
+            android:icon="@drawable/ic_who"
+            android:title="@string/who" />
+        <item
+            android:id="@+id/nav_where"
+            android:icon="@drawable/ic_where"
+            android:title="@string/where" />
+        <item
+            android:id="@+id/nav_when"
+            android:icon="@drawable/ic_when"
+            android:title="@string/when" />
+        <item
+            android:id="@+id/nav_what"
+            android:icon="@drawable/ic_what"
+            android:title="@string/what" />
+        <item
+            android:id="@+id/nav_settings"
+            android:icon="@drawable/ic_settings"
+            android:title="@string/settings" />
+
+    </group>
+
+    <item android:title="Communicate">
+        <menu>
+            <item
+                android:id="@+id/nav_login"
+                android:icon="@drawable/ic_login"
+                android:title="@string/login" />
+            <item
+                android:id="@+id/nav_logout"
+                android:icon="@drawable/ic_logout"
+                android:title="@string/logout" />
+            <item
+                android:id="@+id/nav_accounts"
+                android:icon="@drawable/ic_accounts"
+                android:title="@string/accounts" />
+        </menu>
+    </item>
+
+</menu>

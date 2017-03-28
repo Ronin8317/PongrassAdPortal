@@ -1068,6 +1068,9 @@ public class LoginActivity extends AppCompatActivity implements
     private void StartPositionUpdateService() {
         PrepareLogoutScreen();
 
+        // launch the navigation channel.
+        Intent navIntent = new Intent(this, NavigationActivity.class);
+        startActivity(navIntent);
 
     }
 

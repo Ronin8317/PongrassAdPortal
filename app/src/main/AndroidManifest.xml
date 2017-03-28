@@ -114,7 +114,7 @@
         <activity
             android:name=".data.EventListActivity"
             android:label="@string/title_event_list"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".data.EventDetailActivity"
             android:label="@string/title_event_detail"
@@ -124,6 +124,10 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="adportal.pongrass.com.au.pongrassadportal.data.EventListActivity" />
         </activity>
+        <activity
+            android:name=".NavigationActivity"
+            android:label="@string/title_activity_navigation"
+            android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 
 </manifest>
