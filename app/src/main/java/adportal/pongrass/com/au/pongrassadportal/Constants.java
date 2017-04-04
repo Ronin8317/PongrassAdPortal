@@ -107,6 +107,10 @@ public class Constants {
     public static final int MSG_UNLINK_USERS = 502;
 
 
+    public static final int MSG_EXTRACT_DATA = 1000;
+    public static final int MSG_SAVE_DATA = 1001;
+
+
 
 
 
@@ -116,6 +120,14 @@ public class Constants {
 
     // error
     public static final int ERR_NO_SERVER_REGISTERED = -100;
+
+    public static final int ERR_DATA_SAVING_FAILED = -101;
+    public static final int ERR_DATA_EXTRACTION_FAILED = -102;
+
+    public static final int ERR_FIREBASE_CANNOT_CONNECT = -103;
+    public static final int ERR_FIREBASE_NO_USER = -104;
+    public static final int ERR_FIREBASE_CANNOT_LOGIN = -105;
+
 
 
 

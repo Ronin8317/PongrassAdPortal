@@ -20,6 +20,25 @@ public class Address {
 
     protected Address _ParentAddress; // Parent address
 
+
+    public static class AddressFactory implements FirebaseDataFactory
+    {
+
+
+        @Override
+        public FirebaseData ReturnClass(String data) {
+            // JSON Parse
+            //JSONParser jp = new JSONParser();
+
+            return null;
+        }
+
+        @Override
+        public boolean shouldHandle(String path) {
+            return false;
+        }
+    }
+
     public Address()
     {
 

@@ -1,5 +1,6 @@
 package adportal.pongrass.com.au.pongrassadportal;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -12,6 +13,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+
+import adportal.pongrass.com.au.pongrassadportal.data.EventDetailActivity;
 
 public class NavigationActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -75,23 +78,50 @@ public class NavigationActivity extends AppCompatActivity
         return super.onOptionsItemSelected(item);
     }
 
+    protected void OpenAccountView()
+    {
+        Intent intent = new Intent(this, AccountSettingsActivity.class);
+        startActivity(intent);
+
+    }
+
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.nav_camera) {
-            // Handle the camera action
-        } else if (id == R.id.nav_gallery) {
+        if (id == R.id.nav_accounts) {
+            // open the intent setting
 
-        } else if (id == R.id.nav_slideshow) {
 
-        } else if (id == R.id.nav_manage) {
+        } else if (id == R.id.nav_friends) {
+            // who
+            Intent intent = new Intent(this, UserListActivity.class);
+            startActivity(intent);
 
-        } else if (id == R.id.nav_share) {
+        } else if (id == R.id.nav_what) {
+            Intent intent = new Intent(this, EventDetailActivity.class);
+            startActivity(intent);
 
-        } else if (id == R.id.nav_send) {
+
+        } else if (id == R.id.nav_when) {
+            Intent intent = new Intent(this, ScheduleListActivity.class);
+            startActivity(intent);
+
+
+        } else if (id == R.id.nav_where) {
+            Intent intent = new Intent(this, LocationListActivity.class);
+            startActivity(intent);
+
+        } else if (id == R.id.nav_login) {
+            Intent intent = new Intent(this, LoginActivity.class);
+            startActivity(intent);
+
+        }
+        else if (id == R.id.nav_logout) {
+            Intent intent = new Intent(this, LoginActivity.class);
+            startActivity(intent);
 
         }
 

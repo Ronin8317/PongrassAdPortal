@@ -26,10 +26,14 @@ import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v4.view.GestureDetectorCompat;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.GestureDetector;
 import android.view.KeyEvent;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.inputmethod.EditorInfo;
@@ -130,6 +134,10 @@ public class LoginActivity extends AppCompatActivity implements
 
     protected ProgressDialog mProgressDialog;
 
+    protected GestureDetector mGestureDetector;
+    protected NavigationSwipeListener mGestureListener;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -147,7 +155,11 @@ public class LoginActivity extends AppCompatActivity implements
         startService(updateIntent);
 
 
+
+
         setContentView(R.layout.activity_login);
+
+
         setupFacebookLogin();
         setupGoogleLogin();
         setupEmailSignin();
@@ -188,6 +200,9 @@ public class LoginActivity extends AppCompatActivity implements
         mProgressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
         mProgressDialog.setCancelable(false);
         mProgressDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+
+
+        setupNavigationDrawer();
 
 
         if (askForPermissions()) {
@@ -1069,8 +1084,8 @@ public class LoginActivity extends AppCompatActivity implements
         PrepareLogoutScreen();
 
         // launch the navigation channel.
-        Intent navIntent = new Intent(this, NavigationActivity.class);
-        startActivity(navIntent);
+        //Intent navIntent = new Intent(this, NavigationActivity.class);
+        //startActivity(navIntent);
 
     }
 
@@ -1202,6 +1217,59 @@ public class LoginActivity extends AppCompatActivity implements
 
     }
 
+
+    private void setupNavigationDrawer()
+    {
+        View loginView = findViewById(R.id.activity_login_id);
+        mGestureListener = new NavigationSwipeListener(new SwipeListener() {
+            @Override
+            public boolean onSwipeLeft() {
+                Log.d(TAG, "Swipe Left");
+                return false;
+            }
+
+            @Override
+            public boolean onSwipeRight() {
+                Log.d(TAG, "Swipe Right");
+                // call the intent
+                Intent intent = new Intent(LoginActivity.this, NavigationActivity.class);
+                startActivity(intent);
+
+                return false;
+            }
+
+            @Override
+            public boolean onSwipeUp() {
+                Log.d(TAG, "Swipe Up");
+                return false;
+            }
+
+            @Override
+            public boolean onSwipeDown() {
+                Log.d(TAG, "Swipe Down");
+                return false;
+            }
+        });
+
+        mGestureListener.setCaptureMode(true);
+
+        mGestureDetector = new GestureDetector(this, mGestureListener);
+
+
+        mGestureDetector.setOnDoubleTapListener(mGestureListener);
+
+    }
+
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent event)
+    {
+        if (mGestureDetector.onTouchEvent(event))
+        {
+            return true;
+        }
+        //mGestureDetector.onTouchEvent(event);
+        return super.dispatchTouchEvent(event);
+    }
 
 }
 

@@ -1,4 +1,4 @@
-package adportal.pongrass.com.au.pongrassadportal.data;
+package adportal.pongrass.com.au.pongrassadportal;
 
 import android.app.Activity;
 import android.support.design.widget.CollapsingToolbarLayout;
@@ -9,7 +9,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import adportal.pongrass.com.au.pongrassadportal.R;
+import adportal.pongrass.com.au.pongrassadportal.data.Event;
+import adportal.pongrass.com.au.pongrassadportal.data.EventDetailActivity;
 
 /**
  * A fragment representing a single Event detail screen.
@@ -27,7 +28,7 @@ public class EventDetailFragment extends Fragment {
     /**
      * The dummy content this fragment is presenting.
      */
-    private Event.DummyItem mItem;
+    private Event.EventItem mItem;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the

@@ -1,4 +1,4 @@
-package adportal.pongrass.com.au.pongrassadportal.data;
+package adportal.pongrass.com.au.pongrassadportal;
 
 import android.content.Context;
 import android.content.Intent;
@@ -14,7 +14,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import adportal.pongrass.com.au.pongrassadportal.R;
+import adportal.pongrass.com.au.pongrassadportal.data.Event;
+import adportal.pongrass.com.au.pongrassadportal.data.EventDetailActivity;
 
 import java.util.List;
 
@@ -72,9 +73,9 @@ public class EventListActivity extends AppCompatActivity {
     public class SimpleItemRecyclerViewAdapter
             extends RecyclerView.Adapter<SimpleItemRecyclerViewAdapter.ViewHolder> {
 
-        private final List<Event.DummyItem> mValues;
+        private final List<Event.EventItem> mValues;
 
-        public SimpleItemRecyclerViewAdapter(List<Event.DummyItem> items) {
+        public SimpleItemRecyclerViewAdapter(List<Event.EventItem> items) {
             mValues = items;
         }
 
@@ -122,7 +123,7 @@ public class EventListActivity extends AppCompatActivity {
             public final View mView;
             public final TextView mIdView;
             public final TextView mContentView;
-            public Event.DummyItem mItem;
+            public Event.EventItem mItem;
 
             public ViewHolder(View view) {
                 super(view);
