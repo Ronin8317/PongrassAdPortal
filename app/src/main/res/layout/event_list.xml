@@ -9,5 +9,5 @@
     android:layout_marginLeft="16dp"
     android:layout_marginRight="16dp"
     app:layoutManager="LinearLayoutManager"
-    tools:context="adportal.pongrass.com.au.pongrassadportal.data.EventListActivity"
+    tools:context="adportal.pongrass.com.au.pongrassadportal.EventListActivity"
     tools:listitem="@layout/event_list_content" />

@@ -1,4 +1,4 @@
-package adportal.pongrass.com.au.pongrassadportal.data;
+package adportal.pongrass.com.au.pongrassadportal;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -16,7 +16,7 @@ import adportal.pongrass.com.au.pongrassadportal.EventListActivity;
 import adportal.pongrass.com.au.pongrassadportal.R;
 
 /**
- * An activity representing a single Event detail screen. This
+ * An activity representing a single Events detail screen. This
  * activity is only used narrow width devices. On tablet-size devices,
  * item details are presented side-by-side with a list of items
  * in a {@link EventListActivity}.

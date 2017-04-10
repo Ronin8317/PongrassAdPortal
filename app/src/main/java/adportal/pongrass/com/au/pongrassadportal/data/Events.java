@@ -5,18 +5,70 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import adportal.pongrass.com.au.pongrassadportal.IFirebaseDataReadyCallback;
+
 /**
  * Helper class for providing sample content for user interfaces created by
  * Android template wizards.
  * <p>
  *
  */
-public class Event {
+public class Events {
+
+    public final static String _AllUserPath = "events/users/AllUsers";
+    public final static String _AllEvent = "events/AllGroups";
+
+
+
+    static {
+        // register the factory
+
+
+    }
+
+
+
+    public static class EventAggregator extends FirebaseDataAggregator
+    {
+
+    }
+
+    public static List<EventItem> getDefaultItems()
+    {
+        List<EventItem> res = new ArrayList<>();
+        return res;
+    }
 
     /**
      * An array of sample (dummy) items.
      */
-    public static final List<EventItem> ITEMS = new ArrayList<EventItem>();
+    public static void GetAvailableEvents(IFirebaseDataReadyCallback<List<EventItem>> callback)
+    {
+        List<EventItem> result = new ArrayList<>();
+        // load all the available events based on Firebase ID
+        // get the userID
+        String UserId = FirebaseData.GetCurrentUserID();
+        List<String> SubscribedGroup = FirebaseData.GetCurrentUserGroups();
+
+        // from the user ID, get the current available Events..
+        String AllUserPath = _AllUserPath;
+        String AllGroupPath = _AllEvent;
+
+        // get the subscribed groups..
+
+
+        String OwnerPath = "events/users/"+ UserId + "/owner";
+        String SubscribedPath =  "events/"+ UserId + "/subscribed";
+
+
+
+        // have to chain the result..
+
+
+
+
+
+    }
 
     /**
      * A map of sample (dummy) items, by ID.
@@ -25,15 +77,9 @@ public class Event {
 
     private static final int COUNT = 25;
 
-    static {
-        // Add some sample items.
-        for (int i = 1; i <= COUNT; i++) {
-            addItem(createDummyItem(i));
-        }
-    }
+
 
     private static void addItem(EventItem item) {
-        ITEMS.add(item);
         ITEM_MAP.put(item.id, item);
     }
 

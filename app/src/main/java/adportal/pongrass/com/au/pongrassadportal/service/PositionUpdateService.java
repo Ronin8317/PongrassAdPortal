@@ -1,12 +1,9 @@
-package adportal.pongrass.com.au.pongrassadportal;
+package adportal.pongrass.com.au.pongrassadportal.service;
 
-import android.app.IntentService;
 import android.app.Service;
-import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.location.Location;
@@ -21,7 +18,6 @@ import android.os.RemoteException;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -43,6 +39,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+
+import adportal.pongrass.com.au.pongrassadportal.AuthentificationHelper;
+import adportal.pongrass.com.au.pongrassadportal.Constants;
+import adportal.pongrass.com.au.pongrassadportal.FieldValidation;
 
 import static adportal.pongrass.com.au.pongrassadportal.Constants.*;
 
@@ -417,10 +417,11 @@ public class PositionUpdateService extends Service {
 
 
 
-    void SendPositionUpdateToClient(Messenger client, int code) {
+    void SendPositionUpdateToClient(Messenger client, int code, int id) throws RemoteException{
         Message msg = Message.obtain(null, code);
         // create a bundle
         msg.replyTo = mMessenger;
+        msg.arg1 = id;
 
         Location loc = GetCurrentLocation();
         // create a bundle
@@ -431,12 +432,9 @@ public class PositionUpdateService extends Service {
         Date now = new Date();
         dataBundle.putLong("time", now.getTime());
         msg.setData(dataBundle);
-        try {
+
             client.send(msg);
-        }
-        catch (RemoteException re) {
-            Log.e(TAG, re.getMessage());
-        }
+
 
 
 
@@ -458,7 +456,7 @@ public class PositionUpdateService extends Service {
 
         @Override
         public void handleMessage(Message msg) {
-            Log.i(TAG, "Message Received");
+            Log.i(TAG, "Message Received " + CodeToDescription(msg.what));
             PositionUpdateService serviceMain = PositionUpdateService.getInstance();
             if (serviceMain == null)
             {
@@ -466,34 +464,49 @@ public class PositionUpdateService extends Service {
                 return;
             }
 
-            switch (msg.what) {
+            try {
+                Message msg_reply;
+                switch (msg.what) {
 
-                case MSG_START_POSITIONUPDATE:
-                    Log.d(TAG, "Position Update Request Updated");
-                    serviceMain.StartPositionUpdate(msg.arg1 == 1);
+                    case MSG_START_POSITIONUPDATE:
 
+                        serviceMain.StartPositionUpdate(msg.arg2 == 1);
+                        // send back the acknowledgement
+                        msg_reply = Message.obtain(null, MSG_START_POSITIONUPDATE_ACK, msg.arg1, 0);
+                        msg.replyTo.send(msg_reply);
+                        break;
+                    case MSG_STOP_POSITIONUPDATE:
 
-                    break;
-                case MSG_STOP_POSITIONUPDATE:
-                    Log.d(TAG, "Position Update Request stopped");
-                    serviceMain.StopPositionUpdate();
-                    break;
-                case MSG_GET_POSITION_UPDATE:
+                        serviceMain.StopPositionUpdate();
+                        msg_reply = Message.obtain(null, MSG_STOP_POSITIONUPDATE_ACK, msg.arg1, 0);
+                        msg.replyTo.send(msg_reply);
+                        break;
+                    case MSG_GET_POSITION_UPDATE:
+                        serviceMain.SendPositionUpdateToClient(msg.replyTo, MSG_GET_POSITION_UPDATE_ACK, msg.arg1);
+                        break;
+                    case MSG_CREATE_USER:
 
-                    Log.d(TAG, "Single Position Update Request");
-                    serviceMain.SendPositionUpdateToClient(msg.replyTo, MSG_GET_POSITION_UPDATE_RESPONSE);
-                    break;
-                case MSG_CREATE_USER :
-                    Log.d(TAG, "Create user");
-                    // get the bundle with the intent
-                    Bundle bundle = msg.getData();
-                    if (!FieldValidation.validateUserInfo(bundle))
-                    {
+                        // get the bundle with the intent
+                        Bundle bundle = msg.getData();
+                        Map<String, String> res = FieldValidation.validateUserInfo(bundle);
+                        if (res.isEmpty() == false)
+                        {
 
-                    }
+                        }
+                        else {
+                            // create user..
+                            //serviceMain.CreateUser(bundle);
+                        }
 
-                default:
-                    super.handleMessage(msg);
+                    default:
+                        super.handleMessage(msg);
+                }
+            }
+            catch (RemoteException re)
+            {
+                re.printStackTrace();
+                Log.e(TAG, re.getMessage());
+
             }
         }
 

@@ -4,7 +4,7 @@ package adportal.pongrass.com.au.pongrassadportal.data;
  * Created by user on 27/03/2017.
  */
 
-public class Address {
+public class Address extends FirebaseData{
 
     protected String _LongAddressName;
     protected String _Unit;
@@ -26,11 +26,11 @@ public class Address {
 
 
         @Override
-        public FirebaseData ReturnClass(String data) {
+        public FirebaseData ReturnClass(String path, String data) {
             // JSON Parse
             //JSONParser jp = new JSONParser();
 
-            return null;
+            return new Address(path, data);
         }
 
         @Override
@@ -39,15 +39,13 @@ public class Address {
         }
     }
 
-    public Address()
+    public Address(String path, String data)
     {
+        super(path);
 
     }
 
-    public Address(String LongAddressName)
-    {
-        ParseAddress(LongAddressName);
-    }
+
 
     protected void ParseAddress(String LongAddress)
     {

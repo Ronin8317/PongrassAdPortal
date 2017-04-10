@@ -23,18 +23,24 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".LoginActivity"
-            android:label="@string/app_name">
+            android:name=".NavigationActivity"
+            android:label="@string/title_activity_navigation"
+            android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".LoginActivity"
+            android:label="@string/app_name">
 
-        <service android:name=".PongrassCommunicationService" />
+        </activity>
+
+        <service android:name=".service.PongrassCommunicationService" />
         <service
-            android:name=".PositionUpdateService"
+            android:name=".service.PositionUpdateService"
             android:exported="false"
             android:process=":remote" />
         <service android:name=".PongrassFirebaseMessagingService">
@@ -112,26 +118,23 @@
                 android:value="adportal.pongrass.com.au.pongrassadportal.UserListActivity" />
         </activity>
         <activity
-            android:name=".data.EventListActivity"
+            android:name=".EventListActivity"
             android:label="@string/title_event_list"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".data.EventDetailActivity"
+            android:name=".EventDetailActivity"
             android:label="@string/title_event_detail"
-            android:parentActivityName=".data.EventListActivity"
+            android:parentActivityName=".EventListActivity"
             android:theme="@style/AppTheme.NoActionBar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="adportal.pongrass.com.au.pongrassadportal.data.EventListActivity" />
+                android:value="adportal.pongrass.com.au.pongrassadportal.EventListActivity" />
         </activity>
-        <activity
-            android:name=".NavigationActivity"
-            android:label="@string/title_activity_navigation"
-            android:theme="@style/AppTheme.NoActionBar" />
+
         <activity
             android:name=".ScheduleListActivity"
             android:label="@string/title_schedule_list"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".ScheduleDetailActivity"
             android:label="@string/title_schedule_detail"
@@ -141,6 +144,9 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="adportal.pongrass.com.au.pongrassadportal.ScheduleListActivity" />
         </activity>
+        <activity
+            android:name=".AccountSettingsActivity"
+            android:label="@string/title_activity_account_settings"></activity>
     </application>
 
 </manifest>

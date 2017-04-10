@@ -9,11 +9,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import adportal.pongrass.com.au.pongrassadportal.data.Event;
-import adportal.pongrass.com.au.pongrassadportal.data.EventDetailActivity;
+import adportal.pongrass.com.au.pongrassadportal.data.Events;
 
 /**
- * A fragment representing a single Event detail screen.
+ * A fragment representing a single Events detail screen.
  * This fragment is either contained in a {@link EventListActivity}
  * in two-pane mode (on tablets) or a {@link EventDetailActivity}
  * on handsets.
@@ -28,7 +27,7 @@ public class EventDetailFragment extends Fragment {
     /**
      * The dummy content this fragment is presenting.
      */
-    private Event.EventItem mItem;
+    private Events.EventItem mItem;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -45,7 +44,7 @@ public class EventDetailFragment extends Fragment {
             // Load the dummy content specified by the fragment
             // arguments. In a real-world scenario, use a Loader
             // to load content from a content provider.
-            mItem = Event.ITEM_MAP.get(getArguments().getString(ARG_ITEM_ID));
+            mItem = Events.ITEM_MAP.get(getArguments().getString(ARG_ITEM_ID));
 
             Activity activity = this.getActivity();
             CollapsingToolbarLayout appBarLayout = (CollapsingToolbarLayout) activity.findViewById(R.id.toolbar_layout);

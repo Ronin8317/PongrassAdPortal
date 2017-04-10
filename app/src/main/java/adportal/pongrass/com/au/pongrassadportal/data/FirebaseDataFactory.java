@@ -7,7 +7,7 @@ package adportal.pongrass.com.au.pongrassadportal.data;
 public interface FirebaseDataFactory {
 
     // the class factory creates the class
-    public FirebaseData ReturnClass(String data);
+    public FirebaseData ReturnClass(String path, String data);
 
     public boolean shouldHandle(String path);
 }

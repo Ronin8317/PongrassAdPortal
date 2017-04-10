@@ -2,6 +2,9 @@ package adportal.pongrass.com.au.pongrassadportal;
 
 import android.os.Bundle;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Created by user on 27/03/2017.
  */
@@ -42,14 +45,24 @@ public class FieldValidation {
         return res;
     }
 
+    // field valdiation result is a map of fields and the reason
 
-    public static boolean validateUserInfo(Bundle bundle) {
+
+    public static Map<String, String> validateUserInfo(Bundle bundle) {
+
+        Map<String, String> errors = new HashMap<>();
 
 
-        boolean res = FieldValidation.validateEmail(bundle.getString("email", ""));
-        res &= FieldValidation.validateName(bundle.getString("name", ""));
-        // does not need address, or display name, or image icon
-        return res;
+        if (!FieldValidation.validateEmail(bundle.getString("email", "")))
+        {
+            errors.put("email", "Email is not valid");
+        }
+        if (FieldValidation.validateName(bundle.getString("name", "")))
+        {
+            errors.put("name", "Name is empty");
+        }
+
+        return errors;
 
 
     }
