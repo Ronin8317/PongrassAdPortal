@@ -99,7 +99,7 @@ public class NavigationActivity extends AppCompatActivity
             startActivity(intent);
 
         } else if (id == R.id.nav_what) {
-            Intent intent = new Intent(this, EventDetailActivity.class);
+            Intent intent = new Intent(this, EventListActivity.class);
             startActivity(intent);
 
 

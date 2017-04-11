@@ -88,15 +88,15 @@ public class EventListActivity extends AppCompatActivity {
         @Override
         public void onBindViewHolder(final ViewHolder holder, int position) {
             holder.mItem = mValues.get(position);
-            holder.mIdView.setText(mValues.get(position).id);
-            holder.mContentView.setText(mValues.get(position).content);
+            holder.mIdView.setText(mValues.get(position).getID());
+            holder.mContentView.setText(mValues.get(position).getDisplayDetails());
 
             holder.mView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     if (mTwoPane) {
                         Bundle arguments = new Bundle();
-                        arguments.putString(EventDetailFragment.ARG_ITEM_ID, holder.mItem.id);
+                        arguments.putString(EventDetailFragment.ARG_ITEM_ID, holder.mItem.getID());
                         EventDetailFragment fragment = new EventDetailFragment();
                         fragment.setArguments(arguments);
                         getSupportFragmentManager().beginTransaction()
@@ -105,7 +105,7 @@ public class EventListActivity extends AppCompatActivity {
                     } else {
                         Context context = v.getContext();
                         Intent intent = new Intent(context, EventDetailActivity.class);
-                        intent.putExtra(EventDetailFragment.ARG_ITEM_ID, holder.mItem.id);
+                        intent.putExtra(EventDetailFragment.ARG_ITEM_ID, holder.mItem.getID());
 
                         context.startActivity(intent);
                     }

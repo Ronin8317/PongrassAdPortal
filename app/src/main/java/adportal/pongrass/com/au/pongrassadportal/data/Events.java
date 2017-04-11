@@ -1,5 +1,10 @@
 package adportal.pongrass.com.au.pongrassadportal.data;
 
+import android.os.Bundle;
+
+
+import org.json.simple.JSONObject;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -18,11 +23,24 @@ public class Events {
     public final static String _AllUserPath = "events/users/AllUsers";
     public final static String _AllEvent = "events/AllGroups";
 
+    public final static String EVENT_ID = "event_id"; // unique
+    public final static String EVENT_TITLE = "event_title";
+    public final static String EVENT_DESCRIPTION = "event_description";
+
+    /**
+     * A map of sample (dummy) items, by ID.
+     */
+    private static Map<String, EventItem> ITEM_MAP;
 
 
     static {
         // register the factory
 
+        ITEM_MAP = new HashMap<>();
+
+        for (int i=0;i<20;i++) {
+            addItem(createDummyItem(i));
+        }
 
     }
 
@@ -35,8 +53,14 @@ public class Events {
 
     public static List<EventItem> getDefaultItems()
     {
-        List<EventItem> res = new ArrayList<>();
-        return res;
+       List<EventItem> list = new ArrayList<>();
+
+        for (String key : ITEM_MAP.keySet())
+        {
+            list.add(ITEM_MAP.get(key));
+        }
+
+        return list;
     }
 
     /**
@@ -70,21 +94,25 @@ public class Events {
 
     }
 
-    /**
-     * A map of sample (dummy) items, by ID.
-     */
-    public static final Map<String, EventItem> ITEM_MAP = new HashMap<String, EventItem>();
+
+
 
     private static final int COUNT = 25;
 
 
 
     private static void addItem(EventItem item) {
-        ITEM_MAP.put(item.id, item);
+        String id = item.getID();
+        ITEM_MAP.put(id, item);
     }
 
     private static EventItem createDummyItem(int position) {
-        return new EventItem(String.valueOf(position), "Item " + position, makeDetails(position));
+        Bundle bundle = new Bundle();
+        bundle.putString(EVENT_ID, ""+(position+1));
+        bundle.putString(EVENT_TITLE, "Event Item " + (position + 1));
+        bundle.putString(EVENT_DESCRIPTION, "Dummy event " + (position + 1));
+
+        return new EventItem(bundle);
     }
 
     private static String makeDetails(int position) {
@@ -100,19 +128,33 @@ public class Events {
      * A dummy item representing a piece of content.
      */
     public static class EventItem {
-        public final String id;
-        public final String content;
-        public final String details;
 
-        public EventItem(String id, String content, String details) {
-            this.id = id;
-            this.content = content;
-            this.details = details;
+        Bundle mBundle;
+
+        protected EventItem(Bundle bundle) {
+            mBundle = bundle;
+            assert(mBundle != null);
+
+        }
+
+        public String getID()
+        {
+            return mBundle.getString(EVENT_ID, "");
+        }
+
+        public String getDisplayString()
+        {
+            return mBundle.getString(EVENT_TITLE, "");
+        }
+
+        public String getDisplayDetails()
+        {
+            return mBundle.getString(EVENT_DESCRIPTION, "Description");
         }
 
         @Override
         public String toString() {
-            return content;
+            return mBundle.getString(EVENT_TITLE, "");
         }
     }
 }
