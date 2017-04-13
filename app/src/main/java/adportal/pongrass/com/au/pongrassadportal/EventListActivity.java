@@ -66,7 +66,7 @@ public class EventListActivity extends AppCompatActivity {
     }
 
     private void setupRecyclerView(@NonNull RecyclerView recyclerView) {
-        recyclerView.setAdapter(new SimpleItemRecyclerViewAdapter(Events.getDefaultItems()));
+        recyclerView.setAdapter(new SimpleItemRecyclerViewAdapter(Events.getDefaultItems(this)));
     }
 
     public class SimpleItemRecyclerViewAdapter

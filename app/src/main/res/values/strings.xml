@@ -153,4 +153,14 @@ and by the authority of the same, as follows:</string>
     <string name="pref_ringtone_silent">Silent</string>
 
     <string name="pref_title_vibrate">Vibrate</string>
+
+    <string name="newevent_id">newevent_id</string>;
+    <string name="add_new_event">Add New Event</string>
+    <string name="add_new_event_details">Create a new event which which other people can subscribe to</string>
+    <string name="event_public">Public</string>
+    <string name="event_enter_address">Enter Address</string>
+    <string name="event_enter_title">Enter title for the event</string>
+    <string name="event_enter_detail_description">Enter a detail description for the event</string>
+    <string name="event_save">Save Event Details</string>
+    <string name="event_delete">Remove Event</string>
 </resources>

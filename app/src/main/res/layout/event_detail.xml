@@ -1,9 +1,82 @@
-<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/event_detail"
     style="?android:attr/textAppearanceLarge"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="1000dp"
+    android:orientation="vertical"
+
     android:padding="16dp"
-    android:textIsSelectable="true"
-    tools:context="adportal.pongrass.com.au.pongrassadportal.EventDetailFragment" />
+    tools:context="adportal.pongrass.com.au.pongrassadportal.EventDetailFragment">
+
+    <EditText
+        android:id="@+id/editEventTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:inputType="text"
+        android:selectAllOnFocus="false"
+        android:text="@string/event_enter_title" />
+
+    <CheckBox
+        android:id="@+id/checkBoxEventStatus"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/event_public" />
+
+    <EditText
+        android:id="@+id/editEventLocation"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:inputType="textPostalAddress"
+
+        android:text="@string/event_enter_address" />
+
+    <com.google.android.gms.maps.MapView
+        android:id="@+id/mapEventView"
+        android:layout_width="match_parent"
+        android:layout_height="300dp" />
+
+    <DatePicker
+        android:id="@+id/eventDatePicker"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:datePickerMode="spinner"
+        android:calendarViewShown="false"/>
+
+    <TimePicker
+        android:id="@+id/eventTimePicker"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:timePickerMode="spinner"
+        />
+
+    <EditText
+        android:id="@+id/editEventDetails"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:inputType="textMultiLine"
+        android:text="@string/event_enter_detail_description" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/eventSaveButton"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:text="@string/event_save" />
+
+        <Button
+            android:id="@+id/eventDeleteButton"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:text="@string/event_delete" />
+    </LinearLayout>
+
+
+</LinearLayout>

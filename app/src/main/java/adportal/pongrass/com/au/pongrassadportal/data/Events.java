@@ -1,5 +1,6 @@
 package adportal.pongrass.com.au.pongrassadportal.data;
 
+import android.content.Context;
 import android.os.Bundle;
 
 
@@ -11,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 import adportal.pongrass.com.au.pongrassadportal.IFirebaseDataReadyCallback;
+import adportal.pongrass.com.au.pongrassadportal.R;
 
 /**
  * Helper class for providing sample content for user interfaces created by
@@ -27,22 +29,22 @@ public class Events {
     public final static String EVENT_TITLE = "event_title";
     public final static String EVENT_DESCRIPTION = "event_description";
 
+    public final static String EVENT_LOCATION = "event_location";
+    public final static String EVENT_ADDRESS = "event_address";
+    public final static String EVENT_STATUS = "event_status"; // public or private
+    public final static String EVENT_START = "event_start";
+    public final static String EVENT_END = "event_stop"; // optional
+
+
+
+
     /**
      * A map of sample (dummy) items, by ID.
      */
-    private static Map<String, EventItem> ITEM_MAP;
+    private static Map<String, EventItem> ITEM_MAP = new HashMap<>();
 
 
-    static {
-        // register the factory
 
-        ITEM_MAP = new HashMap<>();
-
-        for (int i=0;i<20;i++) {
-            addItem(createDummyItem(i));
-        }
-
-    }
 
 
 
@@ -51,8 +53,14 @@ public class Events {
 
     }
 
-    public static List<EventItem> getDefaultItems()
+    public static List<EventItem> getDefaultItems(Context context)
     {
+        if (ITEM_MAP.isEmpty())
+        {
+            NewEventItem newItem = NewEventItem.getInstance(context);
+            ITEM_MAP.put(newItem.getID(), newItem);
+        }
+
        List<EventItem> list = new ArrayList<>();
 
         for (String key : ITEM_MAP.keySet())
@@ -106,6 +114,11 @@ public class Events {
         ITEM_MAP.put(id, item);
     }
 
+    public static EventItem getItemByID(String id)
+    {
+        return ITEM_MAP.get(id);
+    }
+
     private static EventItem createDummyItem(int position) {
         Bundle bundle = new Bundle();
         bundle.putString(EVENT_ID, ""+(position+1));
@@ -156,5 +169,30 @@ public class Events {
         public String toString() {
             return mBundle.getString(EVENT_TITLE, "");
         }
+
+        public Bundle getBundle() {
+            return mBundle;
+        }
     }
+
+    public static class NewEventItem extends EventItem{
+
+        public static NewEventItem getInstance(Context context)
+        {
+            Bundle bundle = new Bundle();
+
+            bundle.putString(EVENT_ID, context.getString(R.string.newevent_id));
+            bundle.putString(EVENT_TITLE, context.getString(R.string.add_new_event));
+            bundle.putString(EVENT_DESCRIPTION, context.getString(R.string.add_new_event_details));
+            return new NewEventItem(bundle);
+
+        }
+
+        protected NewEventItem(Bundle bundle)
+        {
+            super(bundle);
+        }
+
+    }
+
 }
