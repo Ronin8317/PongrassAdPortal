@@ -163,4 +163,7 @@ and by the authority of the same, as follows:</string>
     <string name="event_enter_detail_description">Enter a detail description for the event</string>
     <string name="event_save">Save Event Details</string>
     <string name="event_delete">Remove Event</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

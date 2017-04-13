@@ -34,6 +34,8 @@ public class Events {
     public final static String EVENT_STATUS = "event_status"; // public or private
     public final static String EVENT_START = "event_start";
     public final static String EVENT_END = "event_stop"; // optional
+    public final static String EVENT_LATITUDE = "event_latitude";
+    public final static String EVENT_LONGITUDE = "event_longitude";
 
 
 

@@ -54,6 +54,8 @@ public class EventDetailFragment extends Fragment {
     protected DatePicker mDatePicker;
     protected TimePicker mTimePicker;
 
+    protected GoogleMap mGMap;
+
     /**
      * The dummy content this fragment is presenting.
      */
@@ -163,6 +165,7 @@ public class EventDetailFragment extends Fragment {
             public void onMapReady(GoogleMap googleMap) {
                 try {
                     googleMap.setMyLocationEnabled(true);
+                    mGMap = googleMap;
                     // move the camera
                     Activity f_activity = getActivity();
                     LocationManager lm = (LocationManager) f_activity.getSystemService(Context.LOCATION_SERVICE);
@@ -199,6 +202,19 @@ public class EventDetailFragment extends Fragment {
     {
         Bundle bundle = mItem.getBundle();
         Bundle location = bundle.getBundle(Events.EVENT_LOCATION);
+        // map the location
+        if (location != null)
+        {
+            if (mGMap != null) {
+                double lat = location.getDouble(Events.EVENT_LATITUDE, 0.0);
+                double lng = location.getDouble(Events.EVENT_LONGITUDE, 0.0);
+                LatLng latlng = new LatLng(lat, lng);
+            };
+
+
+
+        }
+
         mAddressField.setText(bundle.getString(Events.EVENT_ADDRESS, ""));
         mEventDetails.setText(bundle.getString(Events.EVENT_DESCRIPTION));
         mEventTitle.setText(bundle.getString(Events.EVENT_TITLE));
