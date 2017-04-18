@@ -2,20 +2,28 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="layout.DateTimeFragment">
+    tools:context=".DateTimeFragment">
 
-    <DatePicker
-        android:id="@+id/eventDatePicker"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:datePickerMode="spinner"
-        android:calendarViewShown="false"/>
+        android:orientation="vertical">
 
-    <TimePicker
-        android:id="@+id/eventTimePicker"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:timePickerMode="spinner"
-        />
+        <DatePicker
+            android:id="@+id/fragmentDatePicker"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:datePickerMode="spinner"
+            android:calendarViewShown="false"/>
+
+        <TimePicker
+            android:id="@+id/fragmentTimePicker"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:timePickerMode="spinner"
+            />
+
+    </LinearLayout>
+
 
 </FrameLayout>

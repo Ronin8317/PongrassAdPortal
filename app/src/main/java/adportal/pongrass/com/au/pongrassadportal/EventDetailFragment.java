@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationManager;
+import android.net.Uri;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
@@ -51,8 +52,8 @@ public class EventDetailFragment extends Fragment {
 
     protected Button mDeleteButton;
     protected Button mSaveButton;
-    protected DatePicker mDatePicker;
-    protected TimePicker mTimePicker;
+    protected DateTimeFragment mStartFragment;
+    protected DateTimeFragment mStopFragment;
 
     protected GoogleMap mGMap;
 
@@ -150,8 +151,10 @@ public class EventDetailFragment extends Fragment {
 
         mSaveButton = (Button)rootView.findViewById(R.id.eventSaveButton);
         mDeleteButton = (Button)rootView.findViewById(R.id.eventDeleteButton);
-        mDatePicker = (DatePicker)rootView.findViewById(R.id.eventDatePicker);
-        mTimePicker = (TimePicker)rootView.findViewById(R.id.eventTimePicker);
+        mStartFragment = (DateTimeFragment)getFragmentManager().findFragmentById(R.id.start_fragment);
+        mStopFragment = (DateTimeFragment)getFragmentManager().findFragmentById(R.id.stop_fragment);
+
+
 
 
 
@@ -227,4 +230,6 @@ public class EventDetailFragment extends Fragment {
         return mItem;
 
     }
+
+
 }

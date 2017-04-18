@@ -38,19 +38,17 @@
         android:layout_width="match_parent"
         android:layout_height="300dp" />
 
-    <DatePicker
-        android:id="@+id/eventDatePicker"
+    <fragment android:name="adportal.pongrass.com.au.pongrassadportal.DateTimeFragment"
+        android:id="@+id/start_fragment"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:datePickerMode="spinner"
-        android:calendarViewShown="false"/>
+        tools:layout="@layout/fragment_date_time" />
 
-    <TimePicker
-        android:id="@+id/eventTimePicker"
+    <fragment android:name="adportal.pongrass.com.au.pongrassadportal.DateTimeFragment"
+        android:id="@+id/stop_fragment"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:timePickerMode="spinner"
-        />
+        tools:layout="@layout/fragment_date_time" />
 
     <EditText
         android:id="@+id/editEventDetails"

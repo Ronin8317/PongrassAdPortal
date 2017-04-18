@@ -1,6 +1,7 @@
 package adportal.pongrass.com.au.pongrassadportal;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -21,7 +22,7 @@ import adportal.pongrass.com.au.pongrassadportal.R;
  * item details are presented side-by-side with a list of items
  * in a {@link EventListActivity}.
  */
-public class EventDetailActivity extends AppCompatActivity {
+public class EventDetailActivity extends AppCompatActivity implements DateTimeFragment.OnFragmentInteractionListener{
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -86,5 +87,10 @@ public class EventDetailActivity extends AppCompatActivity {
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onFragmentInteraction(Uri uri) {
+
     }
 }
